@@ -1,19 +1,18 @@
 package com.example.speedcar.objectClasses;
-import com.example.speedcar.objectClasses.Point;
+
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 
-public class Car {
-    Bitmap imageCar;
-    Point carCoordinates;
+public abstract class Car extends Object{
+    protected Bitmap bitmap;
 
-    public Car(Bitmap imageCar, Point carCoordinates){
-        this.imageCar = imageCar;
-        this.carCoordinates = carCoordinates;
+    public Car(Context context, double posX, double posY, Bitmap bitmap) {
+        super(posX, posY);
+        this.bitmap = bitmap;
     }
 
-    public void CarMoveX(int x){
-        this.carCoordinates.setX(x);
+    public void draw(Canvas canvas) {
+        canvas.drawBitmap(bitmap,(float)posX, (float)posY, null);
     }
-
-
 }

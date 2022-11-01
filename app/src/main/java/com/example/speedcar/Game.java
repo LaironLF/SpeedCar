@@ -1,6 +1,8 @@
 package com.example.speedcar;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.view.MotionEvent;
@@ -28,7 +30,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
 
         gameLoop = new GameLoop(this, surfaceHolder);
 
-        player = new Player(getContext(), 500, 500, 30);
+        player = new Player(getContext(), 500, 500, BitmapFactory.decodeResource(getResources(), R.drawable.sprite_0001));
 
         setFocusable(true);
     }
