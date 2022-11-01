@@ -1,6 +1,7 @@
 package com.example.speedcar;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -23,4 +24,5 @@ public class ExampleInstrumentedTest {
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         assertEquals("com.example.speedcar", appContext.getPackageName());
     }
+
 }
