@@ -7,18 +7,23 @@ import java.util.Observer;
 
 public class GameLoop extends Thread{
 
-    private static final double MAX_UPS = 30.0;
+    private static final double MAX_UPS = 25;
     private static final double UPS_PERIOD = 1E+3/MAX_UPS;
 
     private boolean isRunning = false;
     private SurfaceHolder surfaceHolder;
     private Game game;
+    private Canvas canvas;
     private double averageUPS;
     private double averageFPS;
+    private long prev;
+    private int millis;
 
     public GameLoop(Game game, SurfaceHolder surfaceHolder) {
         this.surfaceHolder = surfaceHolder;
         this.game = game;
+        this.millis = 0;
+        this.prev = System.currentTimeMillis();
     }
 
     public double getAverageUPS() {
@@ -33,72 +38,40 @@ public class GameLoop extends Thread{
         isRunning = true;
         start();
     }
+    public void stopLoop() {
+        isRunning = false;
+    }
 
     @Override
     public void run() {
         super.run();
-        // FPS и UPS
-
-        int updateCount = 0;
-        int frameCount = 0;
-
-        long startTime;
-        long elapsedTime;
-        long sleepTime;
-
-        //game loop
-        Canvas canvas = null;
-        startTime = System.currentTimeMillis();
-        while (isRunning){
-
+        while(isRunning) {
+            canvas = null;
             try {
                 canvas = surfaceHolder.lockCanvas();
-                synchronized (surfaceHolder){
-                    game.update();
-                    updateCount++;
+                synchronized (surfaceHolder) {
+                    long now = System.currentTimeMillis();
+                    while (now - millis < prev) {
+                        Thread.sleep(1);
+                        now = System.currentTimeMillis();
+                    }
 
+                    game.update();
                     game.draw(canvas);
+                    prev = now;
                 }
-            }catch (IllegalArgumentException e){
-                e.printStackTrace();
+
+            } catch(Exception ex) {
+                ex.printStackTrace();
             } finally {
-                if(canvas != null){
+                if (canvas != null) {
                     try {
                         surfaceHolder.unlockCanvasAndPost(canvas);
-                        frameCount++;
-                    }catch (Exception e){
-                        e.printStackTrace();
+                    } catch(Exception ex) {
+                        ex.printStackTrace();
                     }
                 }
-
             }
-
-
-            elapsedTime = System.currentTimeMillis() - startTime;
-            sleepTime = (long) (updateCount*UPS_PERIOD - elapsedTime);
-            if(sleepTime > 0){
-                try {
-                    sleep(sleepTime);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            while (sleepTime < 0 && updateCount < MAX_UPS -1){
-                game.update();
-                updateCount++;
-                elapsedTime = System.currentTimeMillis() - startTime;
-                sleepTime = (long) (updateCount - elapsedTime);
-            }
-
-            if(elapsedTime >= 1000){
-                averageUPS = updateCount / ((1E-3) * elapsedTime);
-                averageFPS = frameCount / ((1E-3) * elapsedTime);
-                updateCount = 0;
-                frameCount = 0;
-                startTime = System.currentTimeMillis();
-            }
-
         }
     }
 }

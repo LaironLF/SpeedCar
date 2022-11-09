@@ -1,16 +1,19 @@
 package com.example.speedcar;
 
+import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Point;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+
+import com.example.speedcar.gameLevels.level_1_bridge.Background;
 
 /**
  * Игровой мэнеджер, все объекты в игре, ответственен за обновление и прорисовку всех объектов на экране
@@ -20,17 +23,36 @@ import androidx.core.content.ContextCompat;
 public class Game extends SurfaceView implements SurfaceHolder.Callback {
     private final Player player;
     private GameLoop gameLoop;
+    private Background background;
+    private Background borderFront;
+
 
     public Game(Context context) {
         super(context);
         getContext();
 
+
+
         SurfaceHolder surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
+        Display display = ((Activity) getContext()).getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
 
         gameLoop = new GameLoop(this, surfaceHolder);
 
-        player = new Player(getContext(), 500, 500, BitmapFactory.decodeResource(getResources(), R.drawable.sprite_0001));
+        background = new Background(getContext(), size.x, 0, 50,
+                AssetGetter.getBitmapFromAsset(getContext(), "game-res/road.png"));
+        borderFront = new Background(getContext(), size.x, 0, 900,
+                AssetGetter.getBitmapFromAsset(getContext(), "game-res/border.png"));
+
+
+
+        player = new Player(getContext(), 500, 500,
+                AssetGetter.getBitmapFromAsset(getContext(), "game-res/car.png"));
+
+
+
 
         setFocusable(true);
     }
@@ -41,7 +63,7 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_MOVE:
-                player.setPosition((double)event.getX(), (double)event.getY());
+                player.setTouchPos((double) event.getY());
                 return true;
         }
 
@@ -50,6 +72,9 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
+        if(gameLoop.getState().equals(Thread.State.TERMINATED)){
+            gameLoop = new GameLoop(this, surfaceHolder);
+        }
         gameLoop.startLoop();
     }
 
@@ -66,31 +91,14 @@ public class Game extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
-        drawFPS(canvas);
-        drawUPS(canvas);
-
+        background.draw(canvas);
         player.draw(canvas);
-    }
-
-    public void drawUPS(Canvas canvas){
-        String averageUPS = Double.toString(gameLoop.getAverageUPS());
-        Paint paint = new Paint();
-        int color = ContextCompat.getColor(getContext(), R.color.purple_200);
-        paint.setColor(color);
-        paint.setTextSize(50);
-        canvas.drawText("UPS: " + averageUPS, 100, 200, paint);
-    }
-
-    public void drawFPS(Canvas canvas){
-        String averageFPS = Double.toString(gameLoop.getAverageFPS());
-        Paint paint = new Paint();
-        int color = ContextCompat.getColor(getContext(), R.color.purple_200);
-        paint.setColor(color);
-        paint.setTextSize(50);
-        canvas.drawText("FPS: " + averageFPS, 100, 300, paint);
+        borderFront.draw(canvas);
     }
 
     public void update() {
+        background.move(-20,0);
+        borderFront.move(-22, 0);
         player.update();
     }
 }

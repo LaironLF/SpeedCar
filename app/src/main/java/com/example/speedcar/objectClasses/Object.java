@@ -15,5 +15,11 @@ public abstract class Object {
 
     public abstract void draw(Canvas canvas);
     public abstract void update();
+    public abstract void move(double velX, double velY);
+
+    public double getX(){
+        return this.posX;
+    }
+    public double getY() { return this.posY; }
 
 }
